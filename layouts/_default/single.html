@@ -1,11 +1,5 @@
 {{- define "main" }}
 
-{{- $isProtected := in .Params.categories "April" }}
-{{- $devPassword := "" }}
-{{- if hugo.IsServer }}
-  {{- $devEnv := readFile ".env" }}
-  {{- $devPassword = replaceRE `(?m)^PROTECTED_CONTENT_PASSWORD=(.*)$` "$1" $devEnv | strings.TrimSpace }}
-{{- end }}
 <article class="post-single">
   <header class="post-header">
     {{ partial "breadcrumbs.html" . }}
@@ -35,43 +29,16 @@
   </header>
   {{- $isHidden := (.Param "cover.hiddenInSingle") | default (.Param "cover.hidden") | default false }}
   {{- partial "cover.html" (dict "cxt" . "IsSingle" true "isHidden" $isHidden) }}
-  {{- if and (.Param "ShowToc") (not $isProtected) }}
+  {{- if (.Param "ShowToc") }}
   {{- partial "toc.html" . }}
   {{- end }}
 
   {{- if .Content }}
-  {{- if $isProtected }}
-  <div class="post-content post-content-protected" data-protected-content="true" data-protected-dev-password="{{ $devPassword }}">
-    <div class="protected-content-lock" data-protected-lock>
-      <p>这篇文章属于 April，请输入密码后阅读。</p>
-      <button type="button" data-protected-open>输入密码</button>
-    </div>
-    <div class="protected-content-source" aria-hidden="true">
-      <span data-protected-content-start></span>{{- if not (.Param "disableAnchoredHeadings") -}}{{ partial "anchored_headings.html" .Content -}}{{- else -}}{{ .Content }}{{- end }}<span data-protected-content-end></span>
-    </div>
-    <div class="protected-content-rendered" data-protected-rendered hidden></div>
-    <div class="protected-content-dialog" data-protected-dialog role="dialog" aria-modal="true" aria-labelledby="protected-content-title" hidden>
-      <form data-protected-form>
-        <h2 id="protected-content-title">输入密码</h2>
-        <label>
-          <span>密码</span>
-          <input type="password" autocomplete="current-password" data-protected-input autofocus>
-        </label>
-        <p class="protected-content-error" data-protected-error role="alert" hidden></p>
-        <div class="protected-content-actions">
-          <button type="button" data-protected-cancel>取消</button>
-          <button type="submit">解锁</button>
-        </div>
-      </form>
-    </div>
-  </div>
-  {{- else }}
   <div class="post-content">
     {{- if not (.Param "disableAnchoredHeadings") }}
     {{- partial "anchored_headings.html" .Content -}}
     {{- else }}{{ .Content }}{{ end }}
   </div>
-  {{- end }}
   {{- end }}
 
   <footer class="post-footer">

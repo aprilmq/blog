@@ -1,9 +1,0 @@
-{{- $.Scratch.Add "index" slice -}}
-{{- range site.RegularPages -}}
-    {{- if and (not .Params.searchHidden) (ne .Layout `archives`) (ne .Layout `search`) (not (in .Params.categories "April")) }}
-    {{- $content := .Plain -}}
-    {{- $summary := .Summary -}}
-    {{- $.Scratch.Add "index" (dict "title" .Title "content" $content "permalink" .Permalink "summary" $summary) -}}
-    {{- end -}}
-{{- end -}}
-{{- $.Scratch.Get "index" | jsonify -}}

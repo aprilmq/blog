@@ -1,6 +1,0 @@
-{{- $isProtectedPage := in .Params.categories "April" }}
-{{- $isProtectedTerm := eq (lower .Data.Term) "april" }}
-{{- if or $isProtectedPage $isProtectedTerm }}
-{{- $protectedScript := resources.Get "js/protected-content.js" | minify | fingerprint }}
-<script defer src="{{ $protectedScript.RelPermalink }}" integrity="{{ $protectedScript.Data.Integrity }}"></script>
-{{- end }}

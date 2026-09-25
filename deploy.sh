@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-DEFAULT_DEPLOY_REPO="git@github.com:snakemq/snakemq.github.io.git"
+DEFAULT_DEPLOY_REPO="git@github.com:aprilmq/aprilmq.github.io.git"
 DEPLOY_REPO="${DEPLOY_REPO:-}"
-SOURCE_REPO="${SOURCE_REPO:-git@github.com-snakemq:snakemq/blog.git}"
+SOURCE_REPO="${SOURCE_REPO:-git@github.com:aprilmq/blog.git}"
 DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 PUBLISH_DIR="${PUBLISH_DIR:-public}"
 DEFAULT_COMMIT_MESSAGE="${1:-Deploy blog $(date '+%Y-%m-%d %H:%M:%S %z')}"
@@ -24,14 +24,8 @@ require_cmd() {
 require_cmd git
 require_cmd hugo
 require_cmd rsync
-require_cmd node
 
 cd "$ROOT_DIR"
-
-if [[ -z "${PROTECTED_CONTENT_PASSWORD+x}" && -f "$ROOT_DIR/.env" ]]; then
-  # Keep the local protection password out of the Git repository.
-  source "$ROOT_DIR/.env"
-fi
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   die "$ROOT_DIR is not a Git repository"
@@ -70,7 +64,9 @@ fi
 git clone "$DEPLOY_REPO" "$PUBLISH_DIR"
 
 current_branch="$(git -C "$PUBLISH_DIR" branch --show-current || true)"
-if [[ -z "$current_branch" ]]; then
+if ! git -C "$PUBLISH_DIR" rev-parse --verify HEAD >/dev/null 2>&1; then
+  git -C "$PUBLISH_DIR" checkout -B "$DEPLOY_BRANCH"
+elif [[ -z "$current_branch" ]]; then
   git -C "$PUBLISH_DIR" checkout "$DEPLOY_BRANCH"
 elif [[ "$current_branch" != "$DEPLOY_BRANCH" ]]; then
   git -C "$PUBLISH_DIR" checkout "$DEPLOY_BRANCH"
@@ -79,14 +75,17 @@ fi
 origin_url="$(git -C "$PUBLISH_DIR" remote get-url origin)"
 echo "Deploy target: $origin_url ($DEPLOY_BRANCH)"
 
-git -C "$PUBLISH_DIR" fetch origin "$DEPLOY_BRANCH"
-git -C "$PUBLISH_DIR" pull --ff-only origin "$DEPLOY_BRANCH"
+if git ls-remote --exit-code origin "refs/heads/$DEPLOY_BRANCH" >/dev/null 2>&1; then
+  git -C "$PUBLISH_DIR" fetch origin "$DEPLOY_BRANCH"
+  git -C "$PUBLISH_DIR" pull --ff-only origin "$DEPLOY_BRANCH"
+else
+  echo "No existing $DEPLOY_BRANCH branch on deploy target; creating it."
+fi
 
 tmp_dir="$(mktemp -d)"
 
 echo "Building Hugo site..."
 hugo --destination "$tmp_dir"
-node "$ROOT_DIR/scripts/protect-content.js" "$tmp_dir" "${PROTECTED_CONTENT_PASSWORD:-}"
 
 if [[ -n "$(git status --porcelain --untracked-files=normal)" ]]; then
   echo "Committing blog source..."
@@ -98,10 +97,9 @@ fi
 
 source_upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
 source_branch="$(git branch --show-current)"
-if [[ -n "$source_upstream" && -n "$source_branch" ]]; then
-  source_remote_branch="${source_upstream#*/}"
-  echo "Pushing blog source to $SOURCE_REPO ($source_remote_branch)..."
-  git push "$SOURCE_REPO" "HEAD:$source_remote_branch"
+if [[ -n "$source_branch" ]]; then
+  echo "Pushing blog source to $SOURCE_REPO ($source_branch)..."
+  git push "$SOURCE_REPO" "HEAD:$source_branch"
 else
   echo "No upstream configured for blog source; skipping source push."
 fi
