@@ -27,6 +27,13 @@ require_cmd rsync
 
 cd "$ROOT_DIR"
 
+if [[ -z "${GIT_SSH_COMMAND:-}" ]]; then
+  APRIL_SSH_KEY="${APRIL_SSH_KEY:-$HOME/.ssh/id_april}"
+  if [[ -f "$APRIL_SSH_KEY" ]]; then
+    export GIT_SSH_COMMAND="ssh -i $APRIL_SSH_KEY -o IdentitiesOnly=yes"
+  fi
+fi
+
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   die "$ROOT_DIR is not a Git repository"
 fi
