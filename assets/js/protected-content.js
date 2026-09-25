@@ -3,6 +3,60 @@
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
+  function readCookie(name) {
+    const prefix = `${name}=`;
+    const cookie = document.cookie.split("; ").find((value) => value.startsWith(prefix));
+    return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : "";
+  }
+
+  function writeAuthorization(password) {
+    const value = encodeURIComponent(password);
+    document.cookie = `${sessionKey}=${value}; path=/; SameSite=Lax`;
+    try {
+      sessionStorage.setItem(sessionKey, password);
+      localStorage.setItem(sessionKey, password);
+    } catch {
+      // Storage may be blocked; the same-origin cookie is sufficient.
+    }
+  }
+
+  function clearAuthorization() {
+    document.cookie = `${sessionKey}=; Max-Age=0; path=/; SameSite=Lax`;
+    try {
+      sessionStorage.removeItem(sessionKey);
+      localStorage.removeItem(sessionKey);
+    } catch {
+      // Ignore unavailable browser storage.
+    }
+  }
+
+  function getAuthorization() {
+    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+    const hashPassword = hashParams.get("april-access");
+    if (hashPassword) {
+      try {
+        return atob(hashPassword);
+      } catch {
+        // Ignore malformed hand-off data.
+      }
+    }
+    const cookiePassword = readCookie(sessionKey);
+    if (cookiePassword) return cookiePassword;
+    try {
+      return localStorage.getItem(sessionKey) || sessionStorage.getItem(sessionKey) || "";
+    } catch {
+      return "";
+    }
+  }
+
+  function addAuthorizationToLinks(root, password) {
+    const encodedPassword = btoa(password);
+    root.querySelectorAll("a.entry-link").forEach((link) => {
+      const target = new URL(link.getAttribute("href"), window.location.href);
+      link.href = `${target.pathname}${target.search}#april-access=${encodeURIComponent(encodedPassword)}`;
+    });
+  }
+
   function decodeBase64(value) {
     const binary = atob(value);
     return Uint8Array.from(binary, (character) => character.charCodeAt(0));
@@ -71,7 +125,13 @@
       } else {
         throw new Error("Invalid password");
       }
-      sessionStorage.setItem(sessionKey, password);
+      writeAuthorization(password);
+      if (root.dataset.protectedCategory === "true") {
+        addAuthorizationToLinks(rendered, password);
+      }
+      if (window.location.hash.includes("april-access=")) {
+        window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+      }
       lock.hidden = true;
       rendered.hidden = false;
       closeDialog();
@@ -93,11 +153,6 @@
       event.preventDefault();
       error.hidden = true;
 
-      if (!ciphertext) {
-        showError("文章尚未完成加密，请重新发布后再试。 ");
-        return;
-      }
-
       const submit = form.querySelector("button[type=submit]");
       submit.disabled = true;
       try {
@@ -110,10 +165,10 @@
       }
     });
 
-    const previousPassword = sessionStorage.getItem(sessionKey);
+    const previousPassword = getAuthorization();
     if (previousPassword) {
       unlock(previousPassword).catch(() => {
-        sessionStorage.removeItem(sessionKey);
+        clearAuthorization();
         requestAnimationFrame(() => {
           dialog.hidden = false;
           document.body.classList.add("protected-content-modal-open");

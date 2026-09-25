@@ -42,7 +42,7 @@
   {{- $devEnv := readFile ".env" }}
   {{- $devPassword = replaceRE `(?m)^PROTECTED_CONTENT_PASSWORD=(.*)$` "$1" $devEnv | strings.TrimSpace }}
 {{- end }}
-<div class="protected-content-category" data-protected-content="true" data-protected-dev-password="{{ $devPassword }}">
+<div class="protected-content-category" data-protected-content="true" data-protected-category="true" data-protected-dev-password="{{ $devPassword }}">
   <div class="protected-content-lock" data-protected-lock>
     <p>April 分类已加密，请输入密码后查看文章。</p>
     <button type="button" data-protected-open>输入密码</button>

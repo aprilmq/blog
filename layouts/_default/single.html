@@ -75,18 +75,6 @@
   {{- end }}
 
   <footer class="post-footer">
-    {{- $categories := .Language.Params.Taxonomies.category | default "categories" }}
-    <ul class="post-tags post-categories">
-      {{- range ($.GetTerms $categories) }}
-      <li><a href="{{ .Permalink }}">{{ .LinkTitle }}</a></li>
-      {{- end }}
-    </ul>
-    {{- $tags := .Language.Params.Taxonomies.tag | default "tags" }}
-    <ul class="post-tags">
-      {{- range ($.GetTerms $tags) }}
-      <li><a href="{{ .Permalink }}">{{ .LinkTitle }}</a></li>
-      {{- end }}
-    </ul>
     {{- if (.Param "ShowPostNavLinks") }}
     {{- partial "post_nav_links.html" . }}
     {{- end }}
