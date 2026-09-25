@@ -28,9 +28,13 @@ languages:
         - name: 首页
           pageRef: /
           weight: 1 # 控制在页面上展示的前后顺序
+        - name: 分类
+          pageRef: /categories
+          weight: 2
         - name: 归档
           pageRef: /archives
-          weight: 2
+          weight: 3
+
 # https://github.com/adityatelange/hugo-PaperMod/wiki/Features#search-page
 outputs:
   home:

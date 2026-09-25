@@ -24,8 +24,14 @@ require_cmd() {
 require_cmd git
 require_cmd hugo
 require_cmd rsync
+require_cmd node
 
 cd "$ROOT_DIR"
+
+if [[ -z "${PROTECTED_CONTENT_PASSWORD+x}" && -f "$ROOT_DIR/.env" ]]; then
+  # Keep the local protection password out of the Git repository.
+  source "$ROOT_DIR/.env"
+fi
 
 if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   die "$ROOT_DIR is not a Git repository"
@@ -80,6 +86,7 @@ tmp_dir="$(mktemp -d)"
 
 echo "Building Hugo site..."
 hugo --destination "$tmp_dir"
+node "$ROOT_DIR/scripts/protect-content.js" "$tmp_dir" "${PROTECTED_CONTENT_PASSWORD:-}"
 
 if [[ -n "$(git status --porcelain --untracked-files=normal)" ]]; then
   echo "Committing blog source..."

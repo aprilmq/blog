@@ -1,0 +1,126 @@
+{{- define "main" }}
+
+{{- if (and site.Params.profileMode.enabled .IsHome) }}
+{{- partial "index_profile.html" . }}
+{{- else }}
+
+{{- if not .IsHome | and .Title }}
+<header class="page-header">
+  {{- partial "breadcrumbs.html" . }}
+  <h1>{{ .Title }}</h1>
+  {{- if .Description }}
+  <div class="post-description">{{ .Description | markdownify }}</div>
+  {{- end }}
+</header>
+{{- end }}
+
+{{- if .Content }}
+<div class="post-content">
+  {{- if not (.Param "disableAnchoredHeadings") }}
+  {{- partial "anchored_headings.html" .Content -}}
+  {{- else }}{{ .Content }}{{ end }}
+</div>
+{{- end }}
+
+{{- $pages := union .RegularPages .Sections }}
+{{- if .IsHome }}
+{{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
+{{- $pages = where $pages "Params.hiddenInHomeList" "!=" "true" }}
+{{- end }}
+{{- $visiblePages := slice }}
+{{- range $pages }}
+  {{- if not (in .Params.categories "April") }}
+    {{- $visiblePages = $visiblePages | append . }}
+  {{- end }}
+{{- end }}
+{{- $pages = $visiblePages }}
+
+{{- $isProtectedTerm := and (eq .Kind "term") (eq (lower .Data.Term) "april") }}
+{{- if $isProtectedTerm }}
+{{- $devPassword := "" }}
+{{- if hugo.IsServer }}
+  {{- $devEnv := readFile ".env" }}
+  {{- $devPassword = replaceRE `(?m)^PROTECTED_CONTENT_PASSWORD=(.*)$` "$1" $devEnv | strings.TrimSpace }}
+{{- end }}
+<div class="protected-content-category" data-protected-content="true" data-protected-dev-password="{{ $devPassword }}">
+  <div class="protected-content-lock" data-protected-lock>
+    <p>April 分类已加密，请输入密码后查看文章。</p>
+    <button type="button" data-protected-open>输入密码</button>
+  </div>
+  <div class="protected-content-source" aria-hidden="true">
+    <span data-protected-content-start></span>
+    {{- range $page := site.RegularPages }}
+    {{- if in $page.Params.categories "April" }}
+    <article class="post-entry tag-entry">
+      <header class="entry-header"><h2 class="entry-hint-parent">{{ $page.Title }}</h2></header>
+      <footer class="entry-footer">{{ partial "post_meta.html" $page }}</footer>
+      <a class="entry-link" aria-label="post link to {{ $page.Title | plainify }}" href="{{ $page.Permalink }}"></a>
+    </article>
+    {{- end }}
+    {{- end }}
+    <span data-protected-content-end></span>
+  </div>
+  <div class="protected-content-rendered" data-protected-rendered hidden></div>
+  <div class="protected-content-dialog" data-protected-dialog role="dialog" aria-modal="true" aria-labelledby="protected-content-title" hidden>
+    <form data-protected-form>
+      <h2 id="protected-content-title">输入密码</h2>
+      <label>
+        <span>密码</span>
+        <input type="password" autocomplete="current-password" data-protected-input>
+      </label>
+      <p class="protected-content-error" data-protected-error role="alert" hidden></p>
+      <div class="protected-content-actions">
+        <button type="button" data-protected-cancel>取消</button>
+        <button type="submit">解锁</button>
+      </div>
+    </form>
+  </div>
+</div>
+{{- else }}
+{{- $paginator := .Paginate $pages }}
+
+{{- if and .IsHome site.Params.homeInfoParams (eq $paginator.PageNumber 1) }}
+{{- partial "home_info.html" . }}
+{{- end }}
+
+{{- $term := .Data.Term }}
+{{- range $index, $page := $paginator.Pages }}
+{{- $class := "post-entry" }}
+{{- $user_preferred := or site.Params.disableSpecial1stPost site.Params.homeInfoParams }}
+{{- if (and $.IsHome (eq $paginator.PageNumber 1) (eq $index 0) (not $user_preferred)) }}
+{{- $class = "first-entry" }}
+{{- else if $term }}
+{{- $class = "post-entry tag-entry" }}
+{{- end }}
+{{- $isProtected := in $page.Params.categories "April" }}
+
+<article class="{{ $class }}">
+  {{- $isHidden := ($page.Param "cover.hiddenInList") | default ($page.Param "cover.hidden") | default false }}
+  {{- partial "cover.html" (dict "cxt" $page "IsSingle" false "isHidden" $isHidden) }}
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">{{- $page.Title }}</h2>
+  </header>
+{{- if (ne ($page.Param "hideSummary") true) }}
+  <div class="entry-content">
+    <p>{{ if $isProtected }}需要输入密码后阅读{{ else }}{{ $page.Summary | plainify | htmlUnescape }}{{ if $page.Truncated }}...{{ end }}{{ end }}</p>
+  </div>
+  {{- end }}
+  {{- if not ($page.Param "hideMeta") }}
+  <footer class="entry-footer">{{- partial "post_meta.html" $page -}}</footer>
+  {{- end }}
+  <a class="entry-link" aria-label="post link to {{ $page.Title | plainify }}" href="{{ $page.Permalink }}"></a>
+</article>
+{{- end }}
+
+{{- if gt $paginator.TotalPages 1 }}
+<footer class="page-footer">
+  <nav class="pagination">
+    {{- if $paginator.HasPrev }}<a class="prev" href="{{ $paginator.Prev.URL | absURL }}">«&nbsp;{{ i18n "prev_page" }}</a>{{- end }}
+    {{- if $paginator.HasNext }}<a class="next" href="{{ $paginator.Next.URL | absURL }}">{{ i18n "next_page" }}&nbsp;»</a>{{- end }}
+  </nav>
+</footer>
+{{- end }}
+
+{{- end }}
+{{- end }}
+{{- end }}
