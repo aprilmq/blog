@@ -1,0 +1,39 @@
+{{- define "main" }}
+
+<section class="archive-timeline-page">
+  {{- range site.Taxonomies.categories.Alphabetical }}
+  {{- $categoryPage := .Page }}
+  {{- $pages := .Pages }}
+  {{- if not site.Params.ShowAllPagesInArchive }}
+  {{- $pages = where $pages "Type" "in" site.Params.mainSections }}
+  {{- end }}
+  {{- if gt (len $pages) 0 }}
+  <section class="archive-category">
+    <header class="archive-category__header staggered-reveal" style="--reveal-index: 0">
+      <span class="archive-category__marker" aria-hidden="true"></span>
+      <h2>
+        <a href="{{ $categoryPage.RelPermalink }}">{{ $categoryPage.LinkTitle }}</a>
+        <span>{{ len $pages }}篇</span>
+      </h2>
+    </header>
+
+    <ol class="archive-timeline">
+      {{- range $index, $page := $pages.ByPublishDate.Reverse }}
+      <li class="archive-timeline__item staggered-reveal" style="--reveal-index: {{ add $index 1 }}">
+        <span class="archive-timeline__marker" aria-hidden="true"></span>
+        <time class="archive-timeline__date" datetime="{{ .PublishDate.Format "2006-01-02" }}">
+          {{- .PublishDate.Format "2006年1月2日" -}}
+        </time>
+        <a class="archive-timeline__title" href="{{ .RelPermalink }}">
+          {{- .Title | markdownify -}}
+          {{- if .Draft }}<span class="archive-timeline__draft">草稿</span>{{ end -}}
+        </a>
+      </li>
+      {{- end }}
+    </ol>
+  </section>
+  {{- end }}
+  {{- end }}
+</section>
+
+{{- end }}{{/* end main */}}

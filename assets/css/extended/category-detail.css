@@ -1,0 +1,37 @@
+.category-list-page {
+    width: 100%;
+    padding-block: 12px 40px;
+}
+
+.category-list-page__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 8px;
+    padding: 12px 0 18px;
+    border-bottom: 1px solid #d8d6d1;
+}
+
+.category-list-page__header h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.category-list-page__header span {
+    color: #9a948c;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.category-list-page__posts > .home-post-entry:last-child {
+    border-bottom: 0;
+}
+
+@media screen and (max-width: 640px) {
+    .category-list-page__header h1 {
+        font-size: 24px;
+    }
+}

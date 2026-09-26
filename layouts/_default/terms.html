@@ -1,0 +1,26 @@
+{{- define "main" }}
+
+<section class="category-overview">
+  <header class="page-header">
+    <h1>{{ .Title }}</h1>
+    {{- with .Description }}
+    <div class="post-description">{{ . | markdownify }}</div>
+    {{- end }}
+  </header>
+
+  <ul class="category-card-grid">
+    {{- $type := .Type }}
+    {{- range .Data.Terms.Alphabetical }}
+    {{- $name := .Name }}
+    {{- with site.GetPage (printf "/%s/%s" $type $name) }}
+    <li class="category-card-grid__item">
+      <a class="category-card" href="{{ .RelPermalink }}">
+        <span>{{ .Name }}</span>
+      </a>
+    </li>
+    {{- end }}
+    {{- end }}
+  </ul>
+</section>
+
+{{- end }}{{/* end main */}}

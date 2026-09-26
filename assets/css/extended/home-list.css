@@ -1,0 +1,38 @@
+.home-post-entry {
+    margin-bottom: 0;
+    padding: var(--gap) 0;
+    border: 0;
+    border-bottom: 1px solid #d8d6d1;
+    border-radius: 0;
+    background: transparent;
+}
+
+.main > .home-post-entry:last-of-type {
+    border-bottom: 0;
+}
+
+.home-post-entry:active {
+    transform: none;
+}
+
+.entry-categories {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.entry-categories a {
+    color: #ce1432;
+}
+
+.entry-categories a:hover {
+    color: #ce1432;
+    text-decoration: none;
+    opacity: 0.72;
+}

@@ -35,13 +35,21 @@
         anchor.addEventListener("click", function (e) {
             e.preventDefault();
             var id = this.getAttribute("href").substr(1);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
-                    behavior: "smooth"
+            var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var pageScroll = document.querySelector('.page-scroll');
+            var target = document.querySelector(`[id='${decodeURIComponent(id)}']`);
+
+            if (id === "top" && pageScroll) {
+                pageScroll.scrollTo({
+                    top: 0,
+                    behavior: reduceMotion ? "auto" : "smooth"
                 });
-            } else {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            } else if (target && !reduceMotion) {
+                target.scrollIntoView({ behavior: "smooth" });
+            } else if (target) {
+                target.scrollIntoView();
             }
+
             if (id === "top") {
                 history.replaceState(null, null, " ");
             } else {
@@ -54,8 +62,14 @@
 {{- if (not site.Params.disableScrollToTop) }}
 <script>
     var mybutton = document.getElementById("top-link");
-    window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+    var pageScroll = document.querySelector('.page-scroll');
+    var scrollTarget = pageScroll || window;
+    var updateTopLink = function () {
+        var scrollTop = pageScroll
+            ? pageScroll.scrollTop
+            : Math.max(document.body.scrollTop, document.documentElement.scrollTop);
+
+        if (scrollTop > 800) {
             mybutton.style.visibility = "visible";
             mybutton.style.opacity = "1";
         } else {
@@ -63,6 +77,8 @@
             mybutton.style.opacity = "0";
         }
     };
+    scrollTarget.addEventListener('scroll', updateTopLink, { passive: true });
+    updateTopLink();
 </script>
 {{- end }}
 

@@ -1,0 +1,36 @@
+{{- define "main" }}
+<section class="category-list-page">
+  <header class="category-list-page__header">
+    <h1>{{ .Title }}</h1>
+    <span>{{ len .Pages }} 篇</span>
+  </header>
+
+  <div class="category-list-page__posts">
+    {{- range $page := .Pages.ByDate.Reverse }}
+    <article class="post-entry home-post-entry">
+      {{- $isHidden := (.Param "cover.hiddenInList") | default (.Param "cover.hidden") | default false }}
+      {{- partial "cover.html" (dict "cxt" . "IsSingle" false "isHidden" $isHidden) }}
+      <header class="entry-header">
+        <h2 class="entry-hint-parent">
+          {{- .Title }}
+          {{- if .Draft }}
+          <span class="entry-hint" title="Draft">Draft</span>
+          {{- end }}
+        </h2>
+      </header>
+      {{- if ne (.Param "hideSummary") true }}
+      <div class="entry-content">
+        <p>{{ .Summary | plainify | htmlUnescape }}{{ if .Truncated }}...{{ end }}</p>
+      </div>
+      {{- end }}
+      {{- if not (.Param "hideMeta") }}
+      <footer class="entry-footer">
+        {{- partial "post_meta.html" . -}}
+      </footer>
+      {{- end }}
+      <a class="entry-link" aria-label="post link to {{ .Title | plainify }}" href="{{ .Permalink }}"></a>
+    </article>
+    {{- end }}
+  </div>
+</section>
+{{- end }}

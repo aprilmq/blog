@@ -1,0 +1,19 @@
+.post-content {
+    font-size: 14px;
+    line-height: 1.9;
+}
+
+.post-content p {
+    text-align: justify;
+    text-align-last: start;
+    text-justify: inter-ideograph;
+    line-break: strict;
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+@media screen and (max-width: 768px) {
+    .post-content {
+        line-height: 1.85;
+    }
+}

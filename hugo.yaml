@@ -1,5 +1,5 @@
 baseURL: "" # 主站的 URL
-title: 我来过这世界 # 站点标题
+title: 一个角落 # 站点标题
 copyright: "@2025·秋水刻剑" # 网站的版权声明，通常显示在页脚
 theme: PaperMod # 主题
 languageCode: zh-cn # 语言
@@ -28,12 +28,9 @@ languages:
         - name: 首页
           pageRef: /
           weight: 1 # 控制在页面上展示的前后顺序
-        - name: 分类
-          pageRef: /categories
-          weight: 2
         - name: 归档
           pageRef: /archives
-          weight: 3
+          weight: 2
 
 # https://github.com/adityatelange/hugo-PaperMod/wiki/Features#search-page
 outputs:
@@ -43,9 +40,9 @@ outputs:
     - JSON # necessary for search, 这里的配置修改好之后，一定要重新生成一下
 
 params:
+  defaultTheme: light
+  disableThemeToggle: true
+  disableSpecial1stPost: true
   ShowPostNavLinks: true
   mainSections:
     - posts
-  homeInfoParams:
-    Title: Hi
-    Content: 你来啦...
