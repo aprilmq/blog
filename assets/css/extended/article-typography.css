@@ -12,6 +12,10 @@
     word-break: normal;
 }
 
+.post-single--center-bold-titles .post-content .center-bold-title {
+    text-align: center !important;
+}
+
 @media screen and (max-width: 768px) {
     .post-content {
         line-height: 1.85;
